@@ -14,7 +14,7 @@ export interface User {
   Email?: string;
   Designation?: string;
   Place?: string;
-  image?: File | null;
+  image?: FormData; //change to FormData from  File | null
   ImageUrl?: string;
 }
 

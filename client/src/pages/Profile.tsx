@@ -6,7 +6,6 @@ import Navbar from "../components/Navbar";
 import { useParams } from "react-router-dom";
 import { User, UserContext } from "../components/userContext";
 import { useContext, useState } from "react";
-// import { sp } from "../components/spauth";
 import styled from "styled-components";
 import Tabs from "../components/Tabs";
 

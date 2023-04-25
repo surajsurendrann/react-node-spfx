@@ -1,5 +1,6 @@
 const router = require("express").Router();
 import {Application, Request, Response} from 'express'
+import fileUpload from 'express-fileupload';
 import {sp} from "@pnp/sp-commonjs"
 
 // GET USERS
@@ -38,50 +39,8 @@ router.post("/adduser", async(req : Request, res : Response)=>{
             .catch((error) => {
               console.error(`error creating folder: ${error}`);
             });
-      
-          //upload image
-      
-          const uploadDocumentLibraryName = `test/${folderName}`;
-           const filePathName = "image.jpg"
 
-          // const fileNamePath = encodeURI(newUser.image.name);
-          let result: any;
-          if (newUser.image.size <= 10485760) {
-            // small upload
-            result = await sp.web
-              .getFolderByServerRelativePath(uploadDocumentLibraryName)
-              .files.addUsingPath(filePathName, newUser.image, { Overwrite: true });
-          } else {
-            // large upload
-            result = await sp.web
-              .getFolderByServerRelativePath(uploadDocumentLibraryName)
-              .files.addChunked(
-                filePathName,
-                newUser.image,
-                () => {
-                  console.log(`progress : large file upload`);
-                },
-                true
-              );
-          }
-      
-        //   console.log(`Result of file upload: ${JSON.stringify(result)}`);
-      
-          //Create a link of image in list
-      
-          const url = `https://3kz837.sharepoint.com/sites/mysite/test/${folderName}/image.jpg`;
-          try{
-
-              await sp.web.lists
-              .getByTitle("My List")
-              .items.getById(response.data.Id)
-              .update({
-                  ImageUrl: url,
-                });
-            }catch(error){
-                console.log("error while uploading")
-                res.status(500).json("upload linking failed")
-            }
+           res.status(200).json(folderName) 
     } catch (error) {
         console.error(error)
     }

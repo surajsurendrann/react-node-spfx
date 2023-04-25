@@ -4,7 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import AddUser from "./pages/AddUser";
 import Profile from "./pages/Profile";
-// import Documents from "./pages/Documents";
+import Documents from "./pages/Documents";
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/adduser" element={<AddUser />} />
       <Route path="/profile/:userId" element={<Profile />} />
-      {/* <Route path="/profile/documents/:userId" element={<Documents />} /> */}
+      <Route path="/profile/documents/:userId" element={<Documents />} />
     </Routes>
   );
 }
