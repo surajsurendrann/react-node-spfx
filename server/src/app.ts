@@ -1,5 +1,6 @@
 import express, {Application, Request, Response} from "express"
 const  bodyParser = require('body-parser')
+import fileUpload from 'express-fileupload';
 import { sp } from "@pnp/sp-commonjs";
 import { SPFetchClient } from "@pnp/nodejs-commonjs";
 const cors = require("cors")
@@ -11,7 +12,9 @@ const app: Application = express();
 const port: number = 3001;
 app.use(cors({origin: "*"}))
 app.use(express.json())
-app.use(express.urlencoded({extended : false}))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended : false}))
+app.use(fileUpload())
 dotenv.config();
 
 sp.setup({

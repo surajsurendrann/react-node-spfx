@@ -1,6 +1,5 @@
 const router = require("express").Router();
 import {Application, Request, Response} from 'express'
-import fileUpload from 'express-fileupload';
 import {sp} from "@pnp/sp-commonjs"
 
 // GET USERS
@@ -63,6 +62,8 @@ router.delete("/delete/:Id", async (req : Request, res : Response)=>{
       });
 } )
 
+//Update User
+
 router.put("/updateuser",async (req : Request, res : Response)=>{
   const newUser = req.body
   const id = parseInt(newUser.Id)
@@ -74,5 +75,57 @@ router.put("/updateuser",async (req : Request, res : Response)=>{
   });
 
 })
+
+//Get files
+
+router.get("/files/:Id", async(req : Request, res : Response)=>{
+  const {Id} = req.params
+ try {
+  const folder = await sp.web.getFolderByServerRelativePath(`test/${Id}`).files.get()
+  const files = folder.map((file : any)=>{
+    return file
+  })
+
+  res.status(200).json(files)
+ }catch (error) {
+  console.error(error)
+ }
+})
+
+//upload files
+
+router.put("/document/:Id", async(req : Request, res : Response)=>{
+  const {Id} = req.params
+  const file = (req?.files as any)?.file
+  console.log("imagetype",file)
+
+   if (!file) {
+    console.error('No file selected');
+    return res.status(400).json({
+      success: false,
+      message: 'No file selected',
+    });
+  }
+
+  const documentLibraryName = `test/${Id}`;
+  const fileNamePath = file.name;
+
+  let result: any;
+  if (file?.size <= 10485760) {
+    // small upload
+    console.log('Starting small file upload');
+    result = await sp.web.getFolderByServerRelativePath
+    (documentLibraryName).files.addUsingPath(fileNamePath, file.data, { Overwrite: true });
+  } else {
+    // large upload
+    console.log('Starting large file upload');
+    result = await sp.web.getFolderByServerRelativePath(documentLibraryName).files.addChunked(fileNamePath, file, ()  => {
+      console.log(`Upload progress: `);
+    }, true);
+  }
+
+  res.status(200).json("success");
+})
+
 
 module.exports = router
