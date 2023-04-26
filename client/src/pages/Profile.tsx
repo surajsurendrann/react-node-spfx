@@ -1,22 +1,24 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import * as React from "react";
 import Navbar from "../components/Navbar";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { User, UserContext } from "../components/userContext";
 import { useContext, useState } from "react";
 import styled from "styled-components";
 import Tabs from "../components/Tabs";
+import Swal from "sweetalert2";
 
 const Container = styled.div`
   display: flex;
+  width: 100%;
+  flex-direction: column;
   height: 100vh;
+  align-items: center;
 `;
 
 const Image = styled.img`
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
   object-fit: cover;
   margin: 10px 10px 0px 0px;
 `;
@@ -26,7 +28,7 @@ const DetailsContainer = styled.div`
 `;
 
 const Profile = () => {
-  const { users, updateUser } = useContext(UserContext); //change
+  const { users, updateUser, deleteUser } = useContext(UserContext); //change
   const { userId } = useParams<{ userId: any }>();
   const [isEditing, setIsEditing] = useState(false);
   const [Id] = useState<number>(parseInt(userId)); //change
@@ -34,6 +36,8 @@ const Profile = () => {
   const [designation, setDesignation] = useState<string>();
   const [email, setEmail] = useState<string>();
   const [place, setPlace] = useState<string>();
+
+  const navigate = useNavigate();
 
   const userProfile: User[] = users.filter(
     (user) => user.Id?.toString() === userId
@@ -54,6 +58,26 @@ const Profile = () => {
     setIsEditing(false);
   }
 
+  const handelDelete = async () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          deleteUser(Id);
+          Swal.fire("Deleted!", "User has been deleted.", "success");
+          navigate("/");
+        } catch {}
+      }
+    });
+  };
+
   return (
     <>
       <Navbar />
@@ -68,68 +92,87 @@ const Profile = () => {
                 ) : (
                   <Image src="" />
                 )}
-                <DetailsContainer>
-                  <form onSubmit={handleSubmit}>
-                    <p key={user.Id}>
-                      Name :
-                      <input
-                        type="text"
-                        defaultValue={user.Title}
-                        onChange={(e) => {
-                          setName(e.target.value);
-                        }}
-                      />
-                    </p>
-                    <p>
-                      Email :
-                      <input
-                        type="text"
-                        defaultValue={user.Email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                        }}
-                      />
-                    </p>
-                    <p>
-                      Designation :
-                      <input
-                        type="text"
-                        defaultValue={user.Designation}
-                        onChange={(e) => {
-                          setDesignation(e.target.value);
-                        }}
-                      />
-                    </p>
-                    <p>
-                      Place :
-                      <input
-                        type="text"
-                        defaultValue={user.Place}
-                        onChange={(e) => {
-                          setPlace(e.target.value);
-                        }}
-                      />
-                    </p>
 
-                    <button type="submit">Save</button>
-                  </form>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditing(false);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </DetailsContainer>
+                <form onSubmit={handleSubmit}>
+                  <table key={user.Id}>
+                    <tr>
+                      <td>Name</td>
+                      <td>
+                        <input
+                          type="text"
+                          defaultValue={user.Title}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                          }}
+                        />
+                      </td>
+
+                      <td>Email</td>
+                      <td>
+                        <input
+                          type="text"
+                          defaultValue={user.Email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Designation</td>
+                      <td>
+                        <input
+                          type="text"
+                          defaultValue={user.Designation}
+                          onChange={(e) => {
+                            setDesignation(e.target.value);
+                          }}
+                        />
+                      </td>
+
+                      <td>Place</td>
+                      <td>
+                        <input
+                          type="text"
+                          defaultValue={user.Place}
+                          onChange={(e) => {
+                            setPlace(e.target.value);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  </table>
+                  <button type="submit">Save</button>
+                </form>
+                <div>
+                  <button type="button" onClick={handelDelete}>
+                    Delete
+                  </button>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditing(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </>
             ))}
           </>
         ) : (
           <>
-            {" "}
+            <div>
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                }}
+              >
+                Edit
+              </button>
+            </div>
             {userProfile.map((user) => (
               <>
                 {user.ImageUrl ? (
@@ -137,21 +180,25 @@ const Profile = () => {
                 ) : (
                   <Image src="" />
                 )}
-                <DetailsContainer>
-                  <p key={user.Id}>Name : {user.Title}</p>
-                  <p>Email : {user.Email}</p>
-                  <p>Designation : {user.Designation}</p>
-                  {user.Place && <p>Place : {user.Place}</p>}
-                </DetailsContainer>
-                <div>
-                  <button
-                    onClick={() => {
-                      setIsEditing(true);
-                    }}
-                  >
-                    Edit
-                  </button>
-                </div>
+                <table key={user.Id}>
+                  <tr>
+                    <td>Name</td> <td>: {user.Title}</td>
+                  </tr>
+                  <tr>
+                    <td>Email</td> <td>: {user.Email}</td>
+                  </tr>
+                  <tr>
+                    <td>Designation</td> <td>: {user.Designation}</td>
+                  </tr>
+                  <tr>
+                    {user.Place && (
+                      <>
+                        <td>Place</td>
+                        <td>: {user.Place}</td>
+                      </>
+                    )}
+                  </tr>
+                </table>
               </>
             ))}
           </>

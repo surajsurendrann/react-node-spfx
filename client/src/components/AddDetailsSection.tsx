@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import React from "react";
+import React, { useContext } from "react";
 import { useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 interface Props {}
 
@@ -12,11 +13,12 @@ const AddDetailsSection: React.FC<Props> = () => {
   const [name, setName] = useState<string>("");
   const [designation, setDesignation] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
+    setIsLoading(true);
     const newUser = {
       Title: name,
       Email: email,
@@ -27,6 +29,15 @@ const AddDetailsSection: React.FC<Props> = () => {
         "http://localhost:3001/api/adduser",
         newUser
       );
+
+      setIsLoading(false);
+      Swal.fire({
+        position: "top",
+        icon: "success",
+        title: "New User Added",
+        showConfirmButton: false,
+        timer: 1500,
+      });
       navigate(`/profile/${response.data}`);
     } catch (error) {
       console.error(error);
@@ -61,7 +72,9 @@ const AddDetailsSection: React.FC<Props> = () => {
                 onChange={(e) => setDesignation(e.target.value)}
               />
             </FormGroup>
-            <Button type="submit">Create</Button>
+            <Button type="submit" disabled={isLoading}>
+              Create
+            </Button>
           </Form>
         </Container>
       </MainContainer>

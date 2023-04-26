@@ -1,10 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable react/jsx-key */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-import * as React from "react";
-// import { useContext } from "react";
 import { useContext } from "react";
 import styled from "styled-components";
 import Card from "../components/Card";

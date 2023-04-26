@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable @typescript-eslint/no-empty-function */
 import * as React from "react";
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
@@ -16,6 +10,7 @@ export interface User {
   Place?: string;
   image?: FormData; //change to FormData from  File | null
   ImageUrl?: string;
+  dob?: string;
 }
 
 interface UserContextType {
@@ -46,7 +41,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       setUsers(response.data);
     };
     fetchUsers();
-  }, []);
+  }, [users]);
 
   //Add users
   const addUser = async (newUser: User) => {

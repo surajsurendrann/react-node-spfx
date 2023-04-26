@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-import * as React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
