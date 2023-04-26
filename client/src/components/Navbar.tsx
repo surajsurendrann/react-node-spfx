@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   ArrowCircleLeftOutlined,
@@ -25,7 +25,11 @@ const Navbar = () => {
         />
       </Left>
       <Center>
-        <Title>USER MANAGEMENT</Title>
+        <Title>
+          <Link to="/" style={{ textDecoration: "none", color: "white" }}>
+            HR Portal
+          </Link>
+        </Title>
       </Center>
       <Right>
         <ArrowCircleRightOutlined

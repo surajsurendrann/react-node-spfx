@@ -6,26 +6,7 @@ import { useContext, useState } from "react";
 import styled from "styled-components";
 import Tabs from "../components/Tabs";
 import Swal from "sweetalert2";
-
-const Container = styled.div`
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  height: 100vh;
-  align-items: center;
-`;
-
-const Image = styled.img`
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin: 10px 10px 0px 0px;
-`;
-const DetailsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
+import axios from "axios";
 
 const Profile = () => {
   const { users, updateUser, deleteUser } = useContext(UserContext); //change
@@ -36,12 +17,43 @@ const Profile = () => {
   const [designation, setDesignation] = useState<string>();
   const [email, setEmail] = useState<string>();
   const [place, setPlace] = useState<string>();
+  const [phone, setPhone] = useState<string>();
+  const [gender, setGender] = useState<string>();
+  const [dob, setDob] = useState<string>();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const navigate = useNavigate();
 
   const userProfile: User[] = users.filter(
     (user) => user.Id?.toString() === userId
   );
+
+  const handleFileSelect = (event: any) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  const handleImageUpload = async () => {
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/api/image/${userId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response.data);
+      alert("Image uploaded");
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,10 +64,17 @@ const Profile = () => {
       Email: email,
       Designation: designation,
       Place: place,
+      Phone: phone,
+      Gender: gender,
+      Dob: dob,
     };
-
-    updateUser(updatedUser);
-    setIsEditing(false);
+    try {
+      const response = updateUser(updatedUser);
+      console.log(response);
+      setIsEditing(false);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   const handelDelete = async () => {
@@ -87,118 +106,205 @@ const Profile = () => {
           <>
             {userProfile.map((user) => (
               <>
-                {user.ImageUrl ? (
-                  <Image src={user.ImageUrl} />
-                ) : (
-                  <Image src="" />
-                )}
+                <Form onSubmit={handleSubmit}>
+                  <ImageContainer>
+                    {user.ImageUrl ? (
+                      <>
+                        <Image src={user.ImageUrl} />
+                        <input
+                          type="file"
+                          style={{ width: "85px", marginRight: "35px" }}
+                          onChange={handleFileSelect}
+                        />
+                        {selectedFile && selectedFile.name}
+                        <div>
+                          <UploadButton onClick={handleImageUpload}>
+                            Upload Image
+                          </UploadButton>
+                        </div>
+                      </>
+                    ) : (
+                      <Image src="" />
+                    )}
+                  </ImageContainer>
+                  <DetailsContainer>
+                    <table key={user.Id}>
+                      <tr>
+                        <Td>Name</Td>
+                        <Td>
+                          <Input
+                            type="text"
+                            defaultValue={user.Title}
+                            onChange={(e) => {
+                              setName(e.target.value);
+                            }}
+                          />
+                        </Td>
+                      </tr>
+                      <tr>
+                        <Td>Email</Td>
+                        <Td>
+                          <Input
+                            type="text"
+                            defaultValue={user.Email}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                            }}
+                          />
+                        </Td>
+                      </tr>
+                      <tr>
+                        <Td>Designation</Td>
+                        <Td>
+                          <Input
+                            type="text"
+                            defaultValue={user.Designation}
+                            onChange={(e) => {
+                              setDesignation(e.target.value);
+                            }}
+                          />
+                        </Td>
+                      </tr>
+                      <tr>
+                        <Td>Place</Td>
+                        <Td>
+                          <Input
+                            type="text"
+                            defaultValue={user.Place}
+                            onChange={(e) => {
+                              setPlace(e.target.value);
+                            }}
+                          />
+                        </Td>
+                      </tr>
+                      <tr>
+                        <Td>Phone no</Td>
+                        <Td>
+                          <Input
+                            type="text"
+                            defaultValue={user.Phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                          />
+                        </Td>
+                      </tr>
+                      <tr>
+                        <Td>Gender</Td>
+                        <Td>
+                          <input
+                            type="radio"
+                            value="Male"
+                            checked={gender === "Male"}
+                            onChange={(e) => setGender(e.target.value)}
+                            required
+                          />
+                          Male
+                          <input
+                            type="radio"
+                            value="Female"
+                            required
+                            checked={gender === "Female"}
+                            onChange={(e) => setGender(e.target.value)}
+                          />
+                          Female
+                        </Td>
+                      </tr>
+                      <tr>
+                        <Td>Date of birth</Td>
+                        <Td>
+                          <input
+                            type="date"
+                            defaultValue={user.Dob}
+                            onChange={(e) => {
+                              setDob(e.target.value);
+                            }}
+                          />
+                        </Td>
+                      </tr>
+                    </table>
+                    <div>
+                      <SaveButton type="submit">Save</SaveButton>
 
-                <form onSubmit={handleSubmit}>
-                  <table key={user.Id}>
-                    <tr>
-                      <td>Name</td>
-                      <td>
-                        <input
-                          type="text"
-                          defaultValue={user.Title}
-                          onChange={(e) => {
-                            setName(e.target.value);
-                          }}
-                        />
-                      </td>
-
-                      <td>Email</td>
-                      <td>
-                        <input
-                          type="text"
-                          defaultValue={user.Email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                          }}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Designation</td>
-                      <td>
-                        <input
-                          type="text"
-                          defaultValue={user.Designation}
-                          onChange={(e) => {
-                            setDesignation(e.target.value);
-                          }}
-                        />
-                      </td>
-
-                      <td>Place</td>
-                      <td>
-                        <input
-                          type="text"
-                          defaultValue={user.Place}
-                          onChange={(e) => {
-                            setPlace(e.target.value);
-                          }}
-                        />
-                      </td>
-                    </tr>
-                  </table>
-                  <button type="submit">Save</button>
-                </form>
-                <div>
-                  <button type="button" onClick={handelDelete}>
-                    Delete
-                  </button>
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditing(false);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
+                      <CancelButton
+                        type="button"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setSelectedFile(null);
+                        }}
+                      >
+                        Cancel
+                      </CancelButton>
+                    </div>
+                  </DetailsContainer>
+                </Form>
               </>
             ))}
           </>
         ) : (
           <>
-            <div>
-              <button
-                onClick={() => {
-                  setIsEditing(true);
-                }}
-              >
-                Edit
-              </button>
-            </div>
             {userProfile.map((user) => (
               <>
-                {user.ImageUrl ? (
-                  <Image src={user.ImageUrl} />
-                ) : (
-                  <Image src="" />
-                )}
-                <table key={user.Id}>
-                  <tr>
-                    <td>Name</td> <td>: {user.Title}</td>
-                  </tr>
-                  <tr>
-                    <td>Email</td> <td>: {user.Email}</td>
-                  </tr>
-                  <tr>
-                    <td>Designation</td> <td>: {user.Designation}</td>
-                  </tr>
-                  <tr>
-                    {user.Place && (
-                      <>
-                        <td>Place</td>
-                        <td>: {user.Place}</td>
-                      </>
-                    )}
-                  </tr>
-                </table>
+                <NotEditingImageContainer>
+                  {user.ImageUrl ? (
+                    <Image src={user.ImageUrl} />
+                  ) : (
+                    <Image src="" />
+                  )}
+                </NotEditingImageContainer>
+                <DetailsContainer>
+                  <table key={user.Id}>
+                    <tr>
+                      <Td>Name</Td> <Td>: {user.Title}</Td>
+                    </tr>
+                    <tr>
+                      <Td>Email</Td> <Td>: {user.Email}</Td>
+                    </tr>
+                    <tr>
+                      <Td>Designation</Td> <Td>: {user.Designation}</Td>
+                    </tr>
+                    <tr>
+                      {user.Place && (
+                        <>
+                          <Td>Place</Td>
+                          <Td>: {user.Place}</Td>
+                        </>
+                      )}
+                    </tr>
+                    <tr>
+                      {user.Phone && (
+                        <>
+                          <Td>Phone no</Td> <Td>: {user.Phone}</Td>
+                        </>
+                      )}
+                    </tr>
+                    <tr>
+                      {user.Gender && (
+                        <>
+                          <Td>Gender</Td> <Td>: {user.Gender}</Td>
+                        </>
+                      )}
+                    </tr>
+                    <tr>
+                      {user.Dob && (
+                        <>
+                          <Td>Gender</Td> <Td>: {user.Dob}</Td>
+                        </>
+                      )}
+                    </tr>
+                  </table>
+                  <div>
+                    <EditButton
+                      onClick={() => {
+                        setIsEditing(true);
+                      }}
+                    >
+                      Edit
+                    </EditButton>
+
+                    <DeleteButton type="button" onClick={handelDelete}>
+                      Delete
+                    </DeleteButton>
+                  </div>
+                </DetailsContainer>
               </>
             ))}
           </>
@@ -207,5 +313,106 @@ const Profile = () => {
     </>
   );
 };
+
+const Container = styled.div`
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  justify-content: center;
+`;
+
+const ImageContainer = styled.div`
+  display: flex;
+  margin-top: 20px;
+  flex: 1;
+  flex-direction: column;
+  align-items: end;
+`;
+const NotEditingImageContainer = styled.div`
+  display: flex;
+  margin-top: 20px;
+  flex: 1;
+  justify-content: end;
+`;
+
+const Image = styled.img`
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 10px 10px 10px 0px;
+`;
+const DetailsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  flex: 1;
+  align-items: start;
+`;
+
+const Input = styled.input`
+  font-size: 15px;
+`;
+
+const Td = styled.td`
+  font-size: 18px;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex: 1;
+  justify-content: right;
+`;
+
+const UploadButton = styled.button`
+  background-color: #099d09;
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px;
+  margin: 5px 28px 5px 5px;
+
+  color: white;
+`;
+const EditButton = styled.button`
+  background-color: #099d09;
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px;
+  margin: 5px 28px 5px 5px;
+
+  color: white;
+`;
+const DeleteButton = styled.button`
+  background-color: #cd0c0c;
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px;
+  margin: 5px 28px 5px 5px;
+
+  color: white;
+`;
+const CancelButton = styled.button`
+  background-color: #0d70cd;
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px;
+  margin: 5px 28px 5px 5px;
+
+  color: white;
+`;
+
+const SaveButton = styled.button`
+  background-color: #099d09;
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px;
+  margin: 5px 28px 5px 5px;
+  color: white;
+`;
 
 export default Profile;

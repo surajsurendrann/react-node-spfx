@@ -10,7 +10,9 @@ export interface User {
   Place?: string;
   image?: FormData; //change to FormData from  File | null
   ImageUrl?: string;
-  dob?: string;
+  Phone?: string;
+  Gender?: string;
+  Dob?: string;
 }
 
 interface UserContextType {

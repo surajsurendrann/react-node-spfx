@@ -72,6 +72,9 @@ router.put("/updateuser",async (req : Request, res : Response)=>{
     Email: newUser.Email,
     Designation: newUser.Designation,
     Place: newUser.Place,
+    Phone: newUser.Phone,
+      Gender: newUser.Gender,
+      Dob: newUser.Dob,
   });
 
 })
@@ -127,5 +130,60 @@ router.put("/document/:Id", async(req : Request, res : Response)=>{
   res.status(200).json("success");
 })
 
+router.put("/image/:Id", async(req : Request, res : Response)=>{
+  const { Id } = req.params;
+  console.log(Id)
+  let image = (req?.files as any)?.image;
+ const id = parseInt(Id)
+  console.log("imagetype",image)
+
+  if (!image) {
+    console.error('No file selected');
+    return res.status(400).json({
+      success: false,
+      message: 'No file selected',
+    });
+  }
+
+  const documentLibraryName = `test/${id}`;
+  const fileNamePath = `image.jpg`;
+
+  let result: any;
+  if (image?.size <= 10485760) {
+    // small upload
+    console.log('Starting small file upload');
+    result = await sp.web.getFolderByServerRelativePath
+    (documentLibraryName).files.addUsingPath(fileNamePath, image.data, { Overwrite: true });
+  } else {
+    // large upload
+    console.log('Starting large file upload');
+    result = await sp.web.getFolderByServerRelativePath(documentLibraryName).files.addChunked(fileNamePath, image, ()  => {
+      console.log(`Upload progress: `);
+    }, true);
+  }
+
+  console.log('Server relative URL:', result?.data?.ServerRelativeUrl);
+  const url = `https://3kz837.sharepoint.com${result?.data?.ServerRelativeUrl}`;
+
+  const list = sp.web.lists.getByTitle('My List');
+
+  try {
+    await list.items.getById(id).update({
+      ImageUrl: url,
+    });
+
+    console.log('File upload successful');
+    res.status(200).json({
+      success: true,
+      message: 'Image uploaded successfully',
+    });
+  } catch (error) {
+    console.error('Error while updating item:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error while updating item',
+    });
+  }
+})
 
 module.exports = router
